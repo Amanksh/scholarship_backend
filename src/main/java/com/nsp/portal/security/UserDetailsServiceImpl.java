@@ -31,25 +31,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     /**
      * Loads user details by username (email in our system).
      * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Use userRepository.findByEmail(username) to find the user
-     * 2. If user not found, throw UsernameNotFoundException
-     * 3. Convert User entity to UserDetails with proper authorities
-     * 4. Set authorities based on user.getRole()
-     * 5. Return UserDetails object
-     * 
      * @param username the email address of the user
      * @return UserDetails object for Spring Security
      * @throws UsernameNotFoundException if user not found
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // TODO: Implement user loading logic
-        // 1. Find user by email using userRepository.findByEmail(username)
-        // 2. Handle case when user not found
-        // 3. Create UserDetails object with proper authorities
-        // 4. Return the UserDetails object
+        // Find user by email using userRepository.findByEmail(username)
+        User user = userRepository.findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
         
-        throw new UsernameNotFoundException("User not found with email: " + username);
+        // Create UserDetails object with proper authorities
+        return org.springframework.security.core.userdetails.User.builder()
+            .username(user.getEmail())
+            .password(user.getPassword())
+            .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
+            .build();
     }
 }

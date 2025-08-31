@@ -1,7 +1,13 @@
 package com.nsp.portal.controller;
 
+import com.nsp.portal.dto.AuthResponse;
+import com.nsp.portal.dto.StudentRegistrationRequest;
+import com.nsp.portal.dto.InstituteRegistrationRequest;
+import com.nsp.portal.dto.LoginRequest;
+import com.nsp.portal.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,85 +33,92 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     
     @Autowired
-    private com.nsp.portal.service.AuthService authService;
+    private AuthService authService;
     
     /**
      * Registers a new student user.
-     * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Validate the registration request
-     * 2. Check if email already exists
-     * 3. Hash the password using BCrypt
-     * 4. Create User entity with STUDENT role
-     * 5. Create StudentProfile entity
-     * 6. Save both entities
-     * 7. Return success response with user details
      * 
      * @param request the student registration request
      * @return ResponseEntity with registration result
      */
     @Operation(summary = "Register Student", description = "Registers a new student user with profile")
     @PostMapping("/register/student")
-    public ResponseEntity<?> registerStudent(@RequestBody com.nsp.portal.dto.StudentRegistrationRequest request) {
-        // TODO: Implement student registration logic
-        // 1. Validate request
-        // 2. Check email uniqueness
-        // 3. Hash password
-        // 4. Create user and profile
-        // 5. Return response
-        
-        return ResponseEntity.ok("Student registration endpoint - TODO: Implement");
+    public ResponseEntity<AuthResponse> registerStudent(@Valid @RequestBody StudentRegistrationRequest request) {
+        try {
+            Object result = authService.registerStudent(request);
+            
+            if (result instanceof AuthResponse) {
+                AuthResponse response = (AuthResponse) result;
+                if (response.getMessage().contains("successfully")) {
+                    return ResponseEntity.ok(response);
+                } else {
+                    return ResponseEntity.badRequest().body(response);
+                }
+            } else {
+                return ResponseEntity.badRequest().body(new AuthResponse("Registration failed"));
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(new AuthResponse("Registration failed: " + e.getMessage()));
+        }
     }
     
     /**
      * Submits an institute registration request.
-     * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Validate the registration request
-     * 2. Check if email already exists
-     * 3. Hash the password using BCrypt
-     * 4. Create User entity with INSTITUTE role
-     * 5. Create InstituteProfile entity (not approved yet)
-     * 6. Save both entities
-     * 7. Return success response with pending approval message
      * 
      * @param request the institute registration request
      * @return ResponseEntity with registration result
      */
     @Operation(summary = "Register Institute", description = "Submits an institute registration request")
     @PostMapping("/register/institute")
-    public ResponseEntity<?> registerInstitute(@RequestBody com.nsp.portal.dto.InstituteRegistrationRequest request) {
-        // TODO: Implement institute registration logic
-        // 1. Validate request
-        // 2. Check email uniqueness
-        // 3. Hash password
-        // 4. Create user and profile (not approved)
-        // 5. Return response
-        
-        return ResponseEntity.ok("Institute registration endpoint - TODO: Implement");
+    public ResponseEntity<AuthResponse> registerInstitute(@Valid @RequestBody InstituteRegistrationRequest request) {
+        try {
+            Object result = authService.registerInstitute(request);
+            
+            if (result instanceof AuthResponse) {
+                AuthResponse response = (AuthResponse) result;
+                if (response.getMessage().contains("successfully")) {
+                    return ResponseEntity.ok(response);
+                } else {
+                    return ResponseEntity.badRequest().body(response);
+                }
+            } else {
+                return ResponseEntity.badRequest().body(new AuthResponse("Registration failed"));
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(new AuthResponse("Registration failed: " + e.getMessage()));
+        }
     }
     
     /**
      * Authenticates any user and returns a JWT token.
-     * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Validate the login request
-     * 2. Authenticate user credentials
-     * 3. Generate JWT token
-     * 4. Return JWT token and user details
      * 
      * @param request the login request
      * @return ResponseEntity with JWT token and user details
      */
     @Operation(summary = "User Login", description = "Authenticates user and returns JWT token")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody com.nsp.portal.dto.LoginRequest request) {
-        // TODO: Implement login logic
-        // 1. Validate request
-        // 2. Authenticate credentials
-        // 3. Generate JWT
-        // 4. Return token and user info
-        
-        return ResponseEntity.ok("Login endpoint - TODO: Implement");
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            Object result = authService.login(request);
+            
+            if (result instanceof AuthResponse) {
+                AuthResponse response = (AuthResponse) result;
+                if (response.getMessage().contains("successful")) {
+                    return ResponseEntity.ok(response);
+                } else {
+                    return ResponseEntity.badRequest().body(response);
+                }
+            } else {
+                return ResponseEntity.badRequest().body(new AuthResponse("Login failed"));
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(new AuthResponse("Login failed: " + e.getMessage()));
+        }
     }
 }

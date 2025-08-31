@@ -3,6 +3,7 @@ package com.nsp.portal.service.impl;
 import com.nsp.portal.dto.StudentRegistrationRequest;
 import com.nsp.portal.dto.InstituteRegistrationRequest;
 import com.nsp.portal.dto.LoginRequest;
+import com.nsp.portal.dto.AuthResponse;
 import com.nsp.portal.entity.User;
 import com.nsp.portal.entity.StudentProfile;
 import com.nsp.portal.entity.InstituteProfile;
@@ -16,8 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implementation of AuthService for authentication operations.
@@ -55,126 +58,220 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtUtil jwtUtil;
     
+    @Autowired
+    private UserDetailsService userDetailsService;
+    
     /**
      * Registers a new student user.
-     * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Check if email already exists in database
-     * 2. Hash the password using passwordEncoder.encode()
-     * 3. Create new User entity with STUDENT role
-     * 4. Save the User entity
-     * 5. Create new StudentProfile entity linked to the User
-     * 6. Save the StudentProfile entity
-     * 7. Return success response with user details
      * 
      * @param request the student registration request
      * @return registration result
      */
     @Override
+    @Transactional
     public Object registerStudent(StudentRegistrationRequest request) {
-        // TODO: Implement student registration logic
-        // 1. Check email uniqueness
-        // 2. Hash password
-        // 3. Create and save User
-        // 4. Create and save StudentProfile
-        // 5. Return response
-        
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return "Email already registered";
+        try {
+            // Check if email already exists
+            if (userRepository.existsByEmail(request.getEmail())) {
+                return new AuthResponse("Email already registered");
+            }
+            
+            // Check if Aadhar number already exists
+            if (studentProfileRepository.existsByAadharNumber(request.getAadharNumber())) {
+                return new AuthResponse("Aadhar number already registered");
+            }
+            
+            // Check if mobile number already exists
+            if (userRepository.existsByMobileNumber(request.getMobileNumber())) {
+                return new AuthResponse("Mobile number already registered");
+            }
+            
+            // Hash the password
+            String hashedPassword = passwordEncoder.encode(request.getPassword());
+            
+            // Create new User entity with STUDENT role
+            User user = new User(
+                request.getEmail(),
+                hashedPassword,
+                request.getMobileNumber(),
+                Role.STUDENT
+            );
+            
+            // Save the User entity
+            User savedUser = userRepository.save(user);
+            
+            // Create new StudentProfile entity linked to the User
+            StudentProfile studentProfile = new StudentProfile(
+                savedUser,
+                request.getName(),
+                request.getDateOfBirth(),
+                request.getGender(),
+                request.getDomicileState(),
+                request.getAadharNumber()
+            );
+            
+            // Set additional optional fields
+            studentProfile.setFatherName(request.getFatherName());
+            studentProfile.setMotherName(request.getMotherName());
+            studentProfile.setCategory(request.getCategory());
+            studentProfile.setReligion(request.getReligion());
+            studentProfile.setAddress(request.getAddress());
+            studentProfile.setDistrict(request.getDistrict());
+            studentProfile.setPincode(request.getPincode());
+            
+            // Save the StudentProfile entity
+            studentProfileRepository.save(studentProfile);
+            
+            // Return success response
+            return new AuthResponse(
+                "Student registered successfully",
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                request.getName()
+            );
+            
+        } catch (Exception e) {
+            return new AuthResponse("Registration failed: " + e.getMessage());
         }
-        
-        // TODO: Complete the implementation
-        // - Hash password
-        // - Create User entity
-        // - Create StudentProfile entity
-        // - Save both entities
-        // - Return success response
-        
-        return "Student registration - TODO: Complete implementation";
     }
     
     /**
      * Registers a new institute user.
      * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Check if email already exists in database
-     * 2. Check if institute code already exists
-     * 3. Hash the password using passwordEncoder.encode()
-     * 4. Create new User entity with INSTITUTE role
-     * 5. Save the User entity
-     * 6. Create new InstituteProfile entity (not approved yet)
-     * 7. Save the InstituteProfile entity
-     * 8. Return success response with pending approval message
-     * 
      * @param request the institute registration request
      * @return registration result
      */
     @Override
+    @Transactional
     public Object registerInstitute(InstituteRegistrationRequest request) {
-        // TODO: Implement institute registration logic
-        // 1. Check email uniqueness
-        // 2. Check institute code uniqueness
-        // 3. Hash password
-        // 4. Create and save User
-        // 5. Create and save InstituteProfile (not approved)
-        // 6. Return response
-        
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return "Email already registered";
+        try {
+            // Check if email already exists
+            if (userRepository.existsByEmail(request.getEmail())) {
+                return new AuthResponse("Email already registered");
+            }
+            
+            // Check if institute code already exists
+            if (instituteProfileRepository.existsByInstituteCode(request.getInstituteCode())) {
+                return new AuthResponse("Institute code already registered");
+            }
+            
+            // Check if mobile number already exists
+            if (userRepository.existsByMobileNumber(request.getMobileNumber())) {
+                return new AuthResponse("Mobile number already registered");
+            }
+            
+            // Hash the password
+            String hashedPassword = passwordEncoder.encode(request.getPassword());
+            
+            // Create new User entity with INSTITUTE role
+            User user = new User(
+                request.getEmail(),
+                hashedPassword,
+                request.getMobileNumber(),
+                Role.INSTITUTE
+            );
+            
+            // Save the User entity
+            User savedUser = userRepository.save(user);
+            
+            // Create new InstituteProfile entity (not approved yet)
+            InstituteProfile instituteProfile = new InstituteProfile(
+                savedUser,
+                request.getInstituteName(),
+                request.getInstituteCode()
+            );
+            
+            // Set additional optional fields
+            instituteProfile.setDiseCode(request.getDiseCode());
+            instituteProfile.setAddress(request.getAddress());
+            instituteProfile.setDistrict(request.getDistrict());
+            instituteProfile.setState(request.getState());
+            instituteProfile.setPincode(request.getPincode());
+            instituteProfile.setContactPersonName(request.getContactPersonName());
+            instituteProfile.setContactPersonMobile(request.getContactPersonMobile());
+            instituteProfile.setContactPersonEmail(request.getContactPersonEmail());
+            instituteProfile.setInstituteType(request.getInstituteType());
+            instituteProfile.setAffiliationBody(request.getAffiliationBody());
+            instituteProfile.setEstablishmentYear(request.getEstablishmentYear());
+            
+            // Save the InstituteProfile entity
+            instituteProfileRepository.save(instituteProfile);
+            
+            // Return success response with pending approval message
+            return new AuthResponse(
+                "Institute registration submitted successfully. Pending approval from administrators.",
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                request.getInstituteName()
+            );
+            
+        } catch (Exception e) {
+            return new AuthResponse("Registration failed: " + e.getMessage());
         }
-        
-        // Check if institute code already exists
-        if (instituteProfileRepository.existsByInstituteCode(request.getInstituteCode())) {
-            return "Institute code already registered";
-        }
-        
-        // TODO: Complete the implementation
-        // - Hash password
-        // - Create User entity
-        // - Create InstituteProfile entity (not approved)
-        // - Save both entities
-        // - Return success response
-        
-        return "Institute registration - TODO: Complete implementation";
     }
     
     /**
      * Authenticates a user and returns JWT token.
-     * 
-     * TODO: DEVELOPER 1 - Implement this method:
-     * 1. Authenticate user credentials using AuthenticationManager
-     * 2. Load user details from UserDetailsService
-     * 3. Generate JWT token using JwtUtil
-     * 4. Return JWT token and user information
      * 
      * @param request the login request
      * @return authentication result with JWT token
      */
     @Override
     public Object login(LoginRequest request) {
-        // TODO: Implement login logic
-        // 1. Authenticate credentials
-        // 2. Load user details
-        // 3. Generate JWT token
-        // 4. Return token and user info
-        
         try {
             // Authenticate user credentials
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
             
-            // TODO: Complete the implementation
-            // - Load user details
-            // - Generate JWT token
-            // - Return authentication response
+            // Load user details
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
             
-            return "Login successful - TODO: Complete JWT generation";
+            // Find the user in our database to get additional information
+            User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // Generate JWT token
+            String token = jwtUtil.generateToken(userDetails);
+            
+            // Get user name based on role
+            String userName = getUserName(user);
+            
+            // Return authentication response
+            return new AuthResponse(
+                token,
+                "Login successful",
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                userName
+            );
             
         } catch (Exception e) {
-            return "Invalid credentials";
+            return new AuthResponse("Invalid credentials");
+        }
+    }
+    
+    /**
+     * Helper method to get user name based on role
+     */
+    private String getUserName(User user) {
+        try {
+            if (user.getRole() == Role.STUDENT) {
+                StudentProfile profile = studentProfileRepository.findByUserId(user.getId())
+                    .orElse(null);
+                return profile != null ? profile.getName() : "Student";
+            } else if (user.getRole() == Role.INSTITUTE) {
+                InstituteProfile profile = instituteProfileRepository.findByUserId(user.getId())
+                    .orElse(null);
+                return profile != null ? profile.getInstituteName() : "Institute";
+            } else {
+                return user.getEmail();
+            }
+        } catch (Exception e) {
+            return user.getEmail();
         }
     }
 }

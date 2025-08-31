@@ -65,12 +65,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, 
                                   HttpServletResponse response, 
                                   FilterChain filterChain) throws ServletException, IOException {
-        // TODO: Implement JWT token validation logic
-        // 1. Get Authorization header
-        // 2. Check if it's a Bearer token
-        // 3. Extract and validate token
-        // 4. Set authentication context
-        // 5. Continue filter chain
+        
+        // Skip JWT processing for public endpoints
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/api/auth/") || 
+            requestURI.startsWith("/api/test/") || 
+            requestURI.startsWith("/swagger-ui/") || 
+            requestURI.startsWith("/v3/api-docs/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         
         final String authorizationHeader = request.getHeader("Authorization");
         
