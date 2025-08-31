@@ -1,5 +1,7 @@
 package com.nsp.portal.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@Tag(name = "Authentication", description = "Authentication management APIs")
 public class AuthController {
     
     @Autowired
@@ -41,6 +44,7 @@ public class AuthController {
      * @param request the student registration request
      * @return ResponseEntity with registration result
      */
+    @Operation(summary = "Register Student", description = "Registers a new student user with profile")
     @PostMapping("/register/student")
     public ResponseEntity<?> registerStudent(@RequestBody com.nsp.portal.dto.StudentRegistrationRequest request) {
         // TODO: Implement student registration logic
@@ -68,6 +72,7 @@ public class AuthController {
      * @param request the institute registration request
      * @return ResponseEntity with registration result
      */
+    @Operation(summary = "Register Institute", description = "Submits an institute registration request")
     @PostMapping("/register/institute")
     public ResponseEntity<?> registerInstitute(@RequestBody com.nsp.portal.dto.InstituteRegistrationRequest request) {
         // TODO: Implement institute registration logic
@@ -92,6 +97,7 @@ public class AuthController {
      * @param request the login request
      * @return ResponseEntity with JWT token and user details
      */
+    @Operation(summary = "User Login", description = "Authenticates user and returns JWT token")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody com.nsp.portal.dto.LoginRequest request) {
         // TODO: Implement login logic

@@ -80,6 +80,10 @@ public class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeHttpRequests(authz -> authz
+                // Swagger UI and OpenAPI endpoints - allow public access
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                // Test endpoints - allow public access for verification
+                .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/schemes").hasRole("STUDENT")
                 .requestMatchers("/api/applications/**").hasRole("STUDENT")
