@@ -3,6 +3,7 @@ package com.nsp.portal.repository;
 import com.nsp.portal.entity.ScholarshipApplication;
 import com.nsp.portal.enums.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -59,16 +60,19 @@ public interface ScholarshipApplicationRepository extends JpaRepository<Scholars
     /**
      * Find applications pending institute verification
      */
+    @Query("SELECT sa FROM ScholarshipApplication sa WHERE sa.status = 'PENDING_INSTITUTE_VERIFICATION'")
     List<ScholarshipApplication> findPendingInstituteVerification();
     
     /**
      * Find applications pending state verification
      */
+    @Query("SELECT sa FROM ScholarshipApplication sa WHERE sa.status = 'PENDING_STATE_VERIFICATION'")
     List<ScholarshipApplication> findPendingStateVerification();
     
     /**
      * Find applications pending ministry approval
      */
+    @Query("SELECT sa FROM ScholarshipApplication sa WHERE sa.status = 'PENDING_MINISTRY_APPROVAL'")
     List<ScholarshipApplication> findPendingMinistryApproval();
     
     /**
